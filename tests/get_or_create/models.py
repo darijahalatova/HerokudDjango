@@ -6,7 +6,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 @python_2_unicode_compatible
 class Person(models.Model):
-    first_name = models.CharField(max_length=100, unique=True)
+    first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     birthday = models.DateField()
     defaults = models.TextField()

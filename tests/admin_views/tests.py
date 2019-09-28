@@ -57,14 +57,14 @@ from .models import (
     MainPrepopulated, Media, ModelWithStringPrimaryKey, OtherStory, Paper,
     Parent, ParentWithDependentChildren, ParentWithUUIDPK, Person, Persona,
     Picture, Pizza, Plot, PlotDetails, PluggableSearchPerson, Podcast, Post,
-    PrePopulatedPost, Promo, Question, ReadablePizza, Recommendation,
-    Recommender, RelatedPrepopulated, RelatedWithUUIDPKModel, Report,
-    Restaurant, RowLevelChangePermissionModel, SecretHideout, Section,
-    ShortMessage, Simple, State, Story, Subscriber, SuperSecretHideout,
-    SuperVillain, Telegram, TitleTranslation, Topping, UnchangeableObject,
-    UndeletableObject, UnorderedObject, Villain, Vodcast, Whatsit, Widget,
-    Worker, WorkHour,
+    PrePopulatedPost, Promo, Question, Recommendation, Recommender,
+    RelatedPrepopulated, RelatedWithUUIDPKModel, Report, Restaurant,
+    RowLevelChangePermissionModel, SecretHideout, Section, ShortMessage,
+    Simple, State, Story, Subscriber, SuperSecretHideout, SuperVillain,
+    Telegram, TitleTranslation, Topping, UnchangeableObject, UndeletableObject,
+    UnorderedObject, Villain, Vodcast, Whatsit, Widget, Worker, WorkHour,
 )
+
 
 ERROR_MESSAGE = "Please enter the correct username and password \
 for a staff account. Note that both fields may be case-sensitive."
@@ -612,11 +612,6 @@ class AdminViewBasicTest(AdminViewBasicTestCase):
                 'values': [p.name for p in Promo.objects.all()],
                 'test': lambda obj, value: obj.chap.book.promo_set.filter(name=value).exists(),
             },
-            # A forward relation (book) after a reverse relation (promo).
-            'guest_author__promo__book__id__exact': {
-                'values': [p.id for p in Book.objects.all()],
-                'test': lambda obj, value: obj.guest_author.promo_set.filter(book=value).exists(),
-            },
         }
         for filter_path, params in filters.items():
             for value in params['values']:
@@ -878,17 +873,6 @@ class AdminViewBasicTest(AdminViewBasicTestCase):
         instance = UndeletableObject.objects.create(name='foo')
         response = self.client.get(reverse('admin:admin_views_undeletableobject_change', args=(instance.pk,)))
         self.assertNotContains(response, 'deletelink')
-
-    def test_change_view_logs_m2m_field_changes(self):
-        """Changes to ManyToManyFields are included in the object's history."""
-        pizza = ReadablePizza.objects.create(name='Cheese')
-        cheese = Topping.objects.create(name='cheese')
-        post_data = {'name': pizza.name, 'toppings': [cheese.pk]}
-        response = self.client.post(reverse('admin:admin_views_readablepizza_change', args=(pizza.pk,)), post_data)
-        self.assertRedirects(response, reverse('admin:admin_views_readablepizza_changelist'))
-        pizza_ctype = ContentType.objects.get_for_model(ReadablePizza, for_concrete_model=False)
-        log = LogEntry.objects.filter(content_type=pizza_ctype, object_id=pizza.pk).first()
-        self.assertEqual(log.get_change_message(), 'Changed toppings.')
 
     def test_allows_attributeerror_to_bubble_up(self):
         """

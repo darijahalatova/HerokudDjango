@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import unittest
 
-from django.core.exceptions import FieldDoesNotExist
 from django.db import connection, migrations, models, transaction
 from django.db.migrations.migration import Migration
 from django.db.migrations.operations import CreateModel
@@ -1324,83 +1323,6 @@ class OperationTests(OperationTestBase):
             operation.database_backwards("test_alflpkfk", editor, new_state, project_state)
         assertIdTypeEqualsFkType()
 
-    def test_alter_field_reloads_state_on_fk_target_changes(self):
-        """
-        If AlterField doesn't reload state appropriately, the second AlterField
-        crashes on MySQL due to not dropping the PonyRider.pony foreign key
-        constraint before modifying the column.
-        """
-        app_label = 'alter_alter_field_reloads_state_on_fk_target_changes'
-        project_state = self.apply_operations(app_label, ProjectState(), operations=[
-            migrations.CreateModel('Rider', fields=[
-                ('id', models.CharField(primary_key=True, max_length=100)),
-            ]),
-            migrations.CreateModel('Pony', fields=[
-                ('id', models.CharField(primary_key=True, max_length=100)),
-                ('rider', models.ForeignKey('%s.Rider' % app_label, models.CASCADE)),
-            ]),
-            migrations.CreateModel('PonyRider', fields=[
-                ('id', models.AutoField(primary_key=True)),
-                ('pony', models.ForeignKey('%s.Pony' % app_label, models.CASCADE)),
-            ]),
-        ])
-        project_state = self.apply_operations(app_label, project_state, operations=[
-            migrations.AlterField('Rider', 'id', models.CharField(primary_key=True, max_length=99)),
-            migrations.AlterField('Pony', 'id', models.CharField(primary_key=True, max_length=99)),
-        ])
-
-    def test_alter_field_reloads_state_on_fk_with_to_field_target_changes(self):
-        """
-        If AlterField doesn't reload state appropriately, the second AlterField
-        crashes on MySQL due to not dropping the PonyRider.pony foreign key
-        constraint before modifying the column.
-        """
-        app_label = 'alter_alter_field_reloads_state_on_fk_with_to_field_target_changes'
-        project_state = self.apply_operations(app_label, ProjectState(), operations=[
-            migrations.CreateModel('Rider', fields=[
-                ('id', models.CharField(primary_key=True, max_length=100)),
-                ('slug', models.CharField(unique=True, max_length=100)),
-            ]),
-            migrations.CreateModel('Pony', fields=[
-                ('id', models.CharField(primary_key=True, max_length=100)),
-                ('rider', models.ForeignKey('%s.Rider' % app_label, models.CASCADE, to_field='slug')),
-                ('slug', models.CharField(unique=True, max_length=100)),
-            ]),
-            migrations.CreateModel('PonyRider', fields=[
-                ('id', models.AutoField(primary_key=True)),
-                ('pony', models.ForeignKey('%s.Pony' % app_label, models.CASCADE, to_field='slug')),
-            ]),
-        ])
-        project_state = self.apply_operations(app_label, project_state, operations=[
-            migrations.AlterField('Rider', 'slug', models.CharField(unique=True, max_length=99)),
-            migrations.AlterField('Pony', 'slug', models.CharField(unique=True, max_length=99)),
-        ])
-
-    def test_rename_field_reloads_state_on_fk_target_changes(self):
-        """
-        If RenameField doesn't reload state appropriately, the AlterField
-        crashes on MySQL due to not dropping the PonyRider.pony foreign key
-        constraint before modifying the column.
-        """
-        app_label = 'alter_rename_field_reloads_state_on_fk_target_changes'
-        project_state = self.apply_operations(app_label, ProjectState(), operations=[
-            migrations.CreateModel('Rider', fields=[
-                ('id', models.CharField(primary_key=True, max_length=100)),
-            ]),
-            migrations.CreateModel('Pony', fields=[
-                ('id', models.CharField(primary_key=True, max_length=100)),
-                ('rider', models.ForeignKey('%s.Rider' % app_label, models.CASCADE)),
-            ]),
-            migrations.CreateModel('PonyRider', fields=[
-                ('id', models.AutoField(primary_key=True)),
-                ('pony', models.ForeignKey('%s.Pony' % app_label, models.CASCADE)),
-            ]),
-        ])
-        project_state = self.apply_operations(app_label, project_state, operations=[
-            migrations.RenameField('Rider', 'id', 'id2'),
-            migrations.AlterField('Pony', 'id', models.CharField(primary_key=True, max_length=99)),
-        ])
-
     def test_rename_field(self):
         """
         Tests the RenameField operation.
@@ -1447,12 +1369,6 @@ class OperationTests(OperationTestBase):
         self.assertEqual(definition[0], "RenameField")
         self.assertEqual(definition[1], [])
         self.assertEqual(definition[2], {'model_name': "Pony", 'old_name': "pink", 'new_name': "blue"})
-
-    def test_rename_missing_field(self):
-        state = ProjectState()
-        state.add_model(ModelState('app', 'model', []))
-        with self.assertRaisesMessage(FieldDoesNotExist, "app.model has no field named 'field'"):
-            migrations.RenameField('model', 'field', 'new_field').state_forwards('app', state)
 
     def test_alter_unique_together(self):
         """

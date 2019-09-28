@@ -559,7 +559,7 @@ name::
 Multiple keys can be chained together to form a path lookup::
 
     >>> Dog.objects.filter(data__owner__name='Bob')
-    <QuerySet [<Dog: Rufus>]>
+    <QuerySet [<QuerySet <Dog: Rufus>]>
 
 If the key is an integer, it will be interpreted as an index lookup in an
 array::
@@ -658,7 +658,7 @@ excluded; that is, ``[)``.
 .. class:: DateTimeRangeField(**options)
 
     Stores a range of timestamps. Based on a
-    :class:`~django.db.models.DateTimeField`. Represented by a ``tstzrange`` in
+    :class:`~django.db.models.DateTimeField`. Represented by a ``tztsrange`` in
     the database and a :class:`~psycopg2:psycopg2.extras.DateTimeTZRange` in
     Python.
 

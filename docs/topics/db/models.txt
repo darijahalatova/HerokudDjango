@@ -229,7 +229,7 @@ ones:
         >>> fruit.name = 'Pear'
         >>> fruit.save()
         >>> Fruit.objects.values_list('name', flat=True)
-        <QuerySet ['Apple', 'Pear']>
+        ['Apple', 'Pear']
 
 :attr:`~Field.unique`
     If ``True``, this field must be unique throughout the table.
@@ -899,7 +899,9 @@ information into a number of other models. You write your base class
 and put ``abstract=True`` in the :ref:`Meta <meta-options>`
 class. This model will then not be used to create any database
 table. Instead, when it is used as a base class for other models, its
-fields will be added to those of the child class.
+fields will be added to those of the child class. It is an error to
+have fields in the abstract base class with the same name as those in
+the child (and Django will raise an exception).
 
 An example::
 
@@ -1357,20 +1359,15 @@ use an explicit :class:`~django.db.models.AutoField` in the base models::
     class BookReview(Book, Article):
         pass
 
-Or use a common ancestor to hold the :class:`~django.db.models.AutoField`. This
-requires using an explicit :class:`~django.db.models.OneToOneField` from each
-parent model to the common ancestor to avoid a clash between the fields that
-are automatically generated and inherited by the child::
+Or use a common ancestor to hold the :class:`~django.db.models.AutoField`::
 
     class Piece(models.Model):
         pass
 
     class Article(Piece):
-        article_piece = models.OneToOneField(Piece, on_delete=models.CASCADE, parent_link=True)
         ...
 
     class Book(Piece):
-        book_piece = models.OneToOneField(Piece, on_delete=models.CASCADE, parent_link=True)
         ...
 
     class BookReview(Book, Article):

@@ -476,6 +476,7 @@ metre
 MiB
 micrometre
 middleware
+middlewares
 migrationname
 millimetre
 Minification
@@ -803,7 +804,6 @@ subtransactions
 subtree
 subtype
 subviews
-subwidget
 subwidgets
 superclass
 superset

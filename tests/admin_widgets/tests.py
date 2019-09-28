@@ -17,7 +17,7 @@ from django.contrib.admin.tests import AdminSeleniumTestCase
 from django.contrib.auth.models import User
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db.models import CharField, DateField, DateTimeField, UUIDField
+from django.db.models import CharField, DateField, DateTimeField
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import six, translation
@@ -251,12 +251,6 @@ class AdminForeignKeyRawIdWidget(TestDataMixin, TestCase):
         lookup2 = widgets.url_params_from_lookup_dict({'myfield': my_callable()})
         self.assertEqual(lookup1, lookup2)
 
-    def test_label_and_url_for_value_invalid_uuid(self):
-        field = Bee._meta.get_field('honeycomb')
-        self.assertIsInstance(field.target_field, UUIDField)
-        widget = widgets.ForeignKeyRawIdWidget(field.remote_field, admin.site)
-        self.assertEqual(widget.label_and_url_for_value('invalid-uuid'), ('', ''))
-
 
 class FilteredSelectMultipleWidgetTest(SimpleTestCase):
     def test_render(self):
@@ -438,18 +432,6 @@ class AdminFileWidgetTests(TestDataMixin, TestCase):
         self.assertHTMLEqual(
             w.render('test', SimpleUploadedFile('test', b'content')),
             '<input type="file" name="test" />',
-        )
-
-    def test_render_required(self):
-        widget = widgets.AdminFileWidget()
-        widget.is_required = True
-        self.assertHTMLEqual(
-            widget.render('test', self.album.cover_art),
-            '<p class="file-upload">Currently: <a href="%(STORAGE_URL)salbums/'
-            r'hybrid_theory.jpg">albums\hybrid_theory.jpg</a><br />'
-            'Change: <input type="file" name="test" /></p>' % {
-                'STORAGE_URL': default_storage.url(''),
-            },
         )
 
     def test_readonly_fields(self):

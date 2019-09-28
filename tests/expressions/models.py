@@ -56,7 +56,6 @@ class Experiment(models.Model):
     end = models.DateTimeField()
 
     class Meta:
-        db_table = 'expressions_ExPeRiMeNt'
         ordering = ('name',)
 
     def duration(self):

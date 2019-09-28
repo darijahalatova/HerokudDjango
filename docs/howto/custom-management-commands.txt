@@ -186,24 +186,6 @@ Testing
 Information on how to test custom management commands can be found in the
 :ref:`testing docs <topics-testing-management-commands>`.
 
-Overriding commands
-===================
-
-Django registers the built-in commands and then searches for commands in
-:setting:`INSTALLED_APPS` in reverse. During the search, if a command name
-duplicates an already registered command, the newly discovered command
-overrides the first.
-
-In other words, to override a command, the new command must have the same name
-and its app must be before the overridden command's app in
-:setting:`INSTALLED_APPS`.
-
-Management commands from third-party apps that have been unintentionally
-overridden can be made available under a new name by creating a new command in
-one of your project's apps (ordered before the third-party app in
-:setting:`INSTALLED_APPS`) which imports the ``Command`` of the overridden
-command.
-
 Command objects
 ===============
 
@@ -259,8 +241,7 @@ All attributes can be set in your derived class and can be used in
 .. attribute:: BaseCommand.leave_locale_alone
 
     A boolean indicating whether the locale set in settings should be preserved
-    during the execution of the command instead of translations being
-    deactivated.
+    during the execution of the command instead of being forcibly set to 'en-us'.
 
     Default value is ``False``.
 
@@ -268,8 +249,9 @@ All attributes can be set in your derived class and can be used in
     this option in your custom command if it creates database content that
     is locale-sensitive and such content shouldn't contain any translations
     (like it happens e.g. with :mod:`django.contrib.auth` permissions) as
-    activating any locale might cause unintended effects. See the `Management
-    commands and locales`_ section above for further details.
+    making the locale differ from the de facto default 'en-us' might cause
+    unintended effects. See the `Management commands and locales`_ section
+    above for further details.
 
 .. attribute:: BaseCommand.style
 

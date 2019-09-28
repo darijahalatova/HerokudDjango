@@ -832,7 +832,6 @@ class LoginRedirectAuthenticatedUser(AuthViewsTestCase):
         self.login()
         response = self.client.get(self.dont_redirect_url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['next'], '')
 
     def test_guest(self):
         """If not logged in, stay on the same page."""
@@ -916,12 +915,6 @@ class LogoutTest(AuthViewsTestCase):
         "Logout without next_page option renders the default template"
         self.login()
         response = self.client.get('/logout/')
-        self.assertContains(response, 'Logged out')
-        self.confirm_logged_out()
-
-    def test_logout_with_post(self):
-        self.login()
-        response = self.client.post('/logout/')
         self.assertContains(response, 'Logged out')
         self.confirm_logged_out()
 

@@ -1,23 +1,19 @@
-from __future__ import unicode_literals
-
 import gettext
 import os
 import shutil
-import sys
 import tempfile
-import unittest
 from importlib import import_module
 
 from django import conf
 from django.contrib import admin
 from django.test import SimpleTestCase, mock, override_settings
 from django.test.utils import extend_sys_path
-from django.utils import autoreload, six
-from django.utils._os import npath, upath
+from django.utils import autoreload
+from django.utils._os import npath
 from django.utils.six.moves import _thread
 from django.utils.translation import trans_real
 
-LOCALE_PATH = os.path.join(os.path.dirname(upath(__file__)), 'locale')
+LOCALE_PATH = os.path.join(os.path.dirname(__file__), 'locale')
 
 
 class TestFilenameGenerator(SimpleTestCase):
@@ -51,7 +47,7 @@ class TestFilenameGenerator(SimpleTestCase):
         """
         gen_filenames() yields the built-in Django locale files.
         """
-        django_dir = os.path.join(os.path.dirname(upath(conf.__file__)), 'locale')
+        django_dir = os.path.join(os.path.dirname(conf.__file__), 'locale')
         django_mo = os.path.join(django_dir, 'nl', 'LC_MESSAGES', 'django.mo')
         self.assertFileFound(django_mo)
 
@@ -70,7 +66,7 @@ class TestFilenameGenerator(SimpleTestCase):
         """
         old_cwd = os.getcwd()
         os.chdir(os.path.dirname(__file__))
-        current_dir = os.path.join(os.path.dirname(upath(__file__)), 'locale')
+        current_dir = os.path.join(os.path.dirname(__file__), 'locale')
         current_dir_mo = os.path.join(current_dir, 'nl', 'LC_MESSAGES', 'django.mo')
         try:
             self.assertFileFound(current_dir_mo)
@@ -82,7 +78,7 @@ class TestFilenameGenerator(SimpleTestCase):
         """
         gen_filenames() also yields from locale dirs in installed apps.
         """
-        admin_dir = os.path.join(os.path.dirname(upath(admin.__file__)), 'locale')
+        admin_dir = os.path.join(os.path.dirname(admin.__file__), 'locale')
         admin_mo = os.path.join(admin_dir, 'nl', 'LC_MESSAGES', 'django.mo')
         self.assertFileFound(admin_mo)
 
@@ -92,7 +88,7 @@ class TestFilenameGenerator(SimpleTestCase):
         If i18n machinery is disabled, there is no need for watching the
         locale files.
         """
-        django_dir = os.path.join(os.path.dirname(upath(conf.__file__)), 'locale')
+        django_dir = os.path.join(os.path.dirname(conf.__file__), 'locale')
         django_mo = os.path.join(django_dir, 'nl', 'LC_MESSAGES', 'django.mo')
         self.assertFileNotFound(django_mo)
 
@@ -255,45 +251,3 @@ class ResetTranslationsTests(SimpleTestCase):
         self.assertEqual(trans_real._translations, {})
         self.assertIsNone(trans_real._default)
         self.assertIsInstance(trans_real._active, _thread._local)
-
-
-class TestRestartWithReloader(SimpleTestCase):
-
-    def setUp(self):
-        self._orig_environ = os.environ.copy()
-
-    def tearDown(self):
-        os.environ.clear()
-        os.environ.update(self._orig_environ)
-
-    def test_environment(self):
-        """"
-        With Python 2 on Windows, restart_with_reloader() coerces environment
-        variables to str to avoid "TypeError: environment can only contain
-        strings" in Python's subprocess.py.
-        """
-        # With unicode_literals, these values are unicode.
-        os.environ['SPAM'] = 'spam'
-        with mock.patch.object(sys, 'argv', ['-c', 'pass']):
-            autoreload.restart_with_reloader()
-
-    @unittest.skipUnless(six.PY2 and sys.platform == 'win32', 'This is a Python 2 + Windows-specific issue.')
-    def test_environment_decoding(self):
-        """The system encoding is used for decoding."""
-        os.environ['SPAM'] = 'spam'
-        os.environ['EGGS'] = b'\xc6u vi komprenas?'
-        with mock.patch('locale.getdefaultlocale') as default_locale:
-            # Latin-3 is the correct mapping.
-            default_locale.return_value = ('eo', 'latin3')
-            with mock.patch.object(sys, 'argv', ['-c', 'pass']):
-                autoreload.restart_with_reloader()
-            # CP1252 interprets latin3's C circumflex as AE ligature.
-            # It's incorrect but doesn't raise an error.
-            default_locale.return_value = ('en_US', 'cp1252')
-            with mock.patch.object(sys, 'argv', ['-c', 'pass']):
-                autoreload.restart_with_reloader()
-            # Interpreting the string as UTF-8 is fatal.
-            with self.assertRaises(UnicodeDecodeError):
-                default_locale.return_value = ('en_US', 'utf-8')
-                with mock.patch.object(sys, 'argv', ['-c', 'pass']):
-                    autoreload.restart_with_reloader()

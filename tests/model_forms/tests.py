@@ -19,7 +19,7 @@ from django.forms.models import (
 )
 from django.forms.widgets import CheckboxSelectMultiple
 from django.template import Context, Template
-from django.test import SimpleTestCase, TestCase, mock, skipUnlessDBFeature
+from django.test import SimpleTestCase, TestCase, skipUnlessDBFeature
 from django.utils import six
 from django.utils._os import upath
 
@@ -1708,10 +1708,6 @@ class ModelChoiceFieldTests(TestCase):
             ['Select a valid choice. That choice is not one of the available choices.']
         )
 
-    def test_disabled_modelchoicefield_has_changed(self):
-        field = forms.ModelChoiceField(Author.objects.all(), disabled=True)
-        self.assertIs(field.has_changed('x', 'y'), False)
-
     def test_disabled_multiplemodelchoicefield(self):
         class ArticleForm(forms.ModelForm):
             categories = forms.ModelMultipleChoiceField(Category.objects.all(), required=False)
@@ -1736,10 +1732,6 @@ class ModelChoiceFieldTests(TestCase):
         form.fields['categories'].disabled = True
         self.assertEqual(form.errors, {})
         self.assertEqual([x.pk for x in form.cleaned_data['categories']], [category1.pk])
-
-    def test_disabled_modelmultiplechoicefield_has_changed(self):
-        field = forms.ModelMultipleChoiceField(Author.objects.all(), disabled=True)
-        self.assertIs(field.has_changed('x', 'y'), False)
 
     def test_modelchoicefield_iterator(self):
         """
@@ -2951,16 +2943,6 @@ class LimitChoicesToTests(TestCase):
         fields = fields_for_model(StumpJoke, ['has_fooled_today'])
         self.assertSequenceEqual(fields['has_fooled_today'].queryset, [self.threepwood])
 
-    def test_callable_called_each_time_form_is_instantiated(self):
-        field = StumpJokeForm.base_fields['most_recently_fooled']
-        with mock.patch.object(field, 'limit_choices_to') as today_callable_dict:
-            StumpJokeForm()
-            self.assertEqual(today_callable_dict.call_count, 1)
-            StumpJokeForm()
-            self.assertEqual(today_callable_dict.call_count, 2)
-            StumpJokeForm()
-            self.assertEqual(today_callable_dict.call_count, 3)
-
 
 class FormFieldCallbackTests(SimpleTestCase):
 
@@ -3142,18 +3124,3 @@ class StrictAssignmentTests(TestCase):
             '__all__': ['Cannot set attribute'],
             'title': ['This field cannot be blank.']
         })
-
-
-class ModelToDictTests(TestCase):
-    def test_many_to_many(self):
-        """Data for a ManyToManyField is a list rather than a lazy QuerySet."""
-        blue = Colour.objects.create(name='blue')
-        red = Colour.objects.create(name='red')
-        item = ColourfulItem.objects.create()
-        item.colours.set([blue])
-        data = model_to_dict(item)['colours']
-        self.assertEqual(data, [blue])
-        item.colours.set([red])
-        # If data were a QuerySet, it would be reevaluated here and give "red"
-        # instead of the original value.
-        self.assertEqual(data, [blue])

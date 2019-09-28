@@ -84,7 +84,7 @@ Suppose you have this pair of models, representing a simple blog system::
         ...
 
     class Entry(models.Model):
-        blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+        blog = models.ForeignKey(Blog)
         published = models.DateTimeField(default=datetime.datetime.now)
         ...
 

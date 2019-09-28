@@ -389,7 +389,7 @@ Methods
 .. class:: QueryDict
 
 In an :class:`HttpRequest` object, the :attr:`~HttpRequest.GET` and
-:attr:`~HttpRequest.POST` attributes are instances of ``django.http.QueryDict``,
+`attr:`~HttpRequest.POST` attributes are instances of ``django.http.QueryDict``,
 a dictionary-like class customized to deal with multiple values for the same
 key. This is necessary because some HTML form elements, notably
 ``<select multiple>``, pass multiple values for the same key.
@@ -807,7 +807,7 @@ Methods
         to store a cookie of more than 4096 bytes, but many browsers will not
         set the cookie correctly.
 
-.. method:: HttpResponse.set_signed_cookie(key, value, salt='', max_age=None, expires=None, path='/', domain=None, secure=None, httponly=False)
+.. method:: HttpResponse.set_signed_cookie(key, value, salt='', max_age=None, expires=None, path='/', domain=None, secure=None, httponly=True)
 
     Like :meth:`~HttpResponse.set_cookie()`, but
     :doc:`cryptographic signing </topics/signing>` the cookie before setting
@@ -1039,7 +1039,7 @@ with the following notable differences:
 :class:`StreamingHttpResponse` should only be used in situations where it is
 absolutely required that the whole content isn't iterated before transferring
 the data to the client. Because the content can't be accessed, many
-middleware can't function normally. For example the ``ETag`` and
+middlewares can't function normally. For example the ``ETag`` and
 ``Content-Length`` headers can't be generated for streaming responses.
 
 Attributes

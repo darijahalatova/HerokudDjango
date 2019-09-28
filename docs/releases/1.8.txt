@@ -200,7 +200,7 @@ Minor features
   and :meth:`~django.contrib.auth.models.User.has_module_perms`
   to short-circuit permission checking.
 * :class:`~django.contrib.auth.forms.PasswordResetForm` now
-  has a method :meth:`~django.contrib.auth.forms.PasswordResetForm.send_mail`
+  has a method :meth:`~django.contrib.auth.forms.PasswordResetForm.send_email`
   that can be overridden to customize the mail to be sent.
 
 * The ``max_length`` of :attr:`Permission.name
@@ -1442,11 +1442,11 @@ Old :tfilter:`unordered_list` syntax
 An older (pre-1.0), more restrictive and verbose input format for the
 :tfilter:`unordered_list` template filter has been deprecated::
 
-    ['States', [['Kansas', [['Lawrence', []], ['Topeka', []]]], ['Illinois', []]]]
+    ``['States', [['Kansas', [['Lawrence', []], ['Topeka', []]]], ['Illinois', []]]]``
 
 Using the new syntax, this becomes::
 
-    ['States', ['Kansas', ['Lawrence', 'Topeka'], 'Illinois']]
+    ``['States', ['Kansas', ['Lawrence', 'Topeka'], 'Illinois']]``
 
 ``django.forms.Field._has_changed()``
 -------------------------------------

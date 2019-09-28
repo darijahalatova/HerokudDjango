@@ -51,7 +51,6 @@ class SelectForUpdateTests(TransactionTestCase):
 
     def end_blocking_transaction(self):
         # Roll back the blocking transaction.
-        self.cursor.close()
         self.new_connection.rollback()
         self.new_connection.set_autocommit(True)
 
@@ -275,10 +274,7 @@ class SelectForUpdateTests(TransactionTestCase):
             finally:
                 # This method is run in a separate thread. It uses its own
                 # database connection. Close it without waiting for the GC.
-                # Connection cannot be closed on Oracle because cursor is still
-                # open.
-                if connection.vendor != 'oracle':
-                    connection.close()
+                connection.close()
 
         status = []
         thread = threading.Thread(target=raw, kwargs={'status': status})
